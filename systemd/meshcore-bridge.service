@@ -1,0 +1,21 @@
+[Unit]
+Description=Mesh Atlas MeshCore bridge (USB/Bluetooth)
+After=default.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/share/meshcore-bridge/.venv/bin/meshcore-bridge --config %h/.config/meshcore-bridge/config.toml
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=%h/.local/state/meshcore-bridge %t
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+IPAddressDeny=any
+IPAddressAllow=localhost
+
+[Install]
+WantedBy=default.target

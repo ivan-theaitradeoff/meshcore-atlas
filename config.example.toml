@@ -1,0 +1,23 @@
+[radio]
+transport = "serial" # "ble" for Bluetooth; use "demo" for an entirely offline preview
+device = "" # USB path or BLE address; empty means disconnected
+baud = 115200
+allow_transmit = false # only change after explicit approval of an RF test
+max_message_bytes = 160
+channel_slots = 8 # adjust to your firmware's supported channel count
+
+[llm]
+conversation_memory = true
+enabled = false
+provider = "ollama" # ollama or openai (also llama.cpp's /v1 API)
+endpoint = "http://127.0.0.1:11434"
+model = "llama3.2"
+sender_allowlist = [] # reserved; direct-message AI is disabled
+private_channels = [] # explicitly allowed private channel names
+prefix = "@ai "
+max_input_chars = 1600
+max_output_chars = 1600
+max_output_tokens = 1024
+per_sender_seconds = 0
+global_seconds = 0
+timeout_seconds = 120

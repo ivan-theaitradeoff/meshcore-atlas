@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.sqlite3*
+config.toml
+work/
+*.egg-info/
+build/

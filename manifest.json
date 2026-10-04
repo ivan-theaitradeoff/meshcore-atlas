@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "meshcore.atlas",
+  "name": "Meshcore Atlas",
+  "version": "0.2.1",
+  "author": "Meshcore Atlas contributors",
+  "description": "MeshCore messaging, node maps, and private local AI from your Omarchy bar.",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Widget.qml"
+  },
+  "barWidget": {
+    "displayName": "Meshcore Atlas",
+    "category": "Network",
+    "allowMultiple": false
+  }
+}
