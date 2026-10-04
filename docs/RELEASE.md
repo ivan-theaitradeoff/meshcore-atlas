@@ -7,4 +7,4 @@ Guided node setup, channels, contacts, online maps, and optional private-channel
 
 Publish only the audited release folder, never the development checkout or its history. GitHub publication and marketplace approval are separate steps. Submit the public repository through https://plugins.omarchy.org/publish.html.
 
-No real screenshots are included: they can expose conversations, contact names, keys, and locations.
+The 0.2.1 release ZIP contains no screenshots. The repository now includes a separately approved preview with visible node names and conversations; image metadata is absent.

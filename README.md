@@ -8,6 +8,10 @@ Connect a MeshCore companion node over Bluetooth or USB, manage conversations, a
 
 > **Early release.** Bluetooth messaging and local AI have been exercised with hardware. USB is implemented but has not been hardware-tested. The Omarchy marketplace submission is awaiting maintainer review; this is not an official MeshCore client or a security-certified product.
 
+![Meshcore Atlas messaging interface](preview.png)
+
+*Screenshot from an earlier interface version. Visible node names and messages are included with the repository owner’s approval; image metadata has been removed.*
+
 ## What you can do
 
 - **Message over the mesh:** public, private, and hashtag channels; direct messages to saved contacts; local history and message actions.

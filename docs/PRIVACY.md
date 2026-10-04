@@ -46,3 +46,7 @@ AI has no plugin-provided shell tools or filesystem-reading tools. Responses may
 Do not post channel keys, pairing PINs, model-server secrets, real message history, node addresses, or personal location data in public issues. Use fictional examples and redact screenshots before uploading. This repository has no private vulnerability-reporting address configured; do not attach sensitive details to public reports.
 
 The public GitHub repository and release identify their GitHub owner. The plugin's author/namespace metadata uses the project identity, and the published source does not include the development machine's private runtime data.
+
+## Repository preview
+
+The repository preview is an actual screenshot published at the repository owner’s explicit request. It contains visible node names, messages, and status information. Embedded image metadata is absent; removing metadata does not hide visible content. The previously audited 0.2.1 release ZIP is unchanged and does not contain this preview.
