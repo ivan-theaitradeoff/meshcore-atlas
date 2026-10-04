@@ -1,121 +1,122 @@
-# Meshcore Atlas for Omarchy
+# Meshcore Atlas
 
-MeshCore messaging, node maps, and private access to local AI from your desktop bar.
+**MeshCore messaging, online node maps, and private-channel local AI—from your Omarchy desktop.**
 
-**Early release · 0.2.1** — tested with Bluetooth companion hardware on Omarchy Quattro. USB transport is implemented but has not been hardware-tested. This is an independent project, not an official MeshCore client.
+Connect a MeshCore companion node over Bluetooth or USB, manage conversations, and optionally make a local language model available to your own private mesh channel.
 
-## Features
+[Download 0.2.1](https://github.com/ivan-theaitradeoff/meshcore-atlas/releases/tag/v0.2.1) · [Report an issue](https://github.com/ivan-theaitradeoff/meshcore-atlas/issues) · [Privacy and permissions](docs/PRIVACY.md)
 
-- Taskbar icon opens or focuses one app window; remembers the last conversation.
-- Public/private/hashtag channels, direct messages, favourites, and local message history.
-- Channel creation, QR image import and sharing, notification preferences and retention.
-- Message copy/reply/block/delete actions and available signal/path metadata.
-- Live heard-repeat counts for new outgoing channel messages.
-- Node details and editable node/radio settings.
-- Online OpenStreetMap with search, repeater filtering, clustering and saved view.
-- Optional private-channel local AI, numbered multipart messages, and a settings popup.
-- LM Studio model selection and context control from the desktop or another mesh node.
+> **Early release.** Bluetooth messaging and local AI have been exercised with hardware. USB is implemented but has not been hardware-tested. The Omarchy marketplace submission is awaiting maintainer review; this is not an official MeshCore client or a security-certified product.
 
-## Requirements
+## What you can do
 
-Omarchy Quattro with the Quickshell plugin API, Python 3.11+, Quickshell, Qt Quick Controls, Qt Location and Qt Positioning. On Omarchy, install missing map/QR/notification utilities with:
+- **Message over the mesh:** public, private, and hashtag channels; direct messages to saved contacts; local history and message actions.
+- **Manage your node:** guided connection setup, automatic reconnect, node details, and radio settings.
+- **Find nodes on a map:** online OpenStreetMap tiles, search, repeater filtering, and clustered markers.
+- **Use local AI remotely:** allow selected private channels to send questions to a model running on your computer.
+- **Control your model:** LM Studio model selection and context settings from the app or mesh messages.
+- **Keep conversations going:** optional local conversation memory and numbered multipart replies.
 
-```sh
-omarchy pkg add qt6-location qrencode zbar libnotify
-```
+## Before you install
 
-Use a node running MeshCore **companion firmware**. Bluetooth requires working BlueZ and a paired node; serial requires permission to access its device. The optional Python radio dependency is pinned to the tested `meshcore==2.3.14` API. The bridge and UI are separate processes.
+You need Omarchy with the Quattro Quickshell plugin API, Python 3.11 or newer, and a radio running **MeshCore companion firmware**. Bluetooth needs a working BlueZ adapter. USB needs a data cable and permission to access the serial device.
 
-## Install and connect in the app
+First-run setup installs the bridge in its own Python environment. It can request desktop authorization to install missing map, QR-code, and notification packages. Internet access is needed for these downloads. See [exact installation scope](docs/PRIVACY.md#installation-and-permissions).
 
-Install the plugin through Omarchy's plugin manager and click its taskbar icon.
-On first launch, **Connect a node** opens automatically. Existing users can open it through the node-name **⋮ → Connection setup** menu.
+## Install
 
-1. The first-run popup explains how to prepare the node: first set it up with the MeshCore phone app, disconnect it in that app, then forget/unpair the node in the phone’s Bluetooth settings. Keep it powered on nearby and disconnect any other apps using it. Choose **Set up Mesh Atlas** to install missing components through a desktop authorization prompt; downloads need internet access.
-2. Choose **Find my node**, then Bluetooth or USB serial. Select a discovered node. USB requires a data cable and serial permissions for your desktop user.
-3. Enter the current six-digit PIN for an unpaired Bluetooth node, choose whether to allow radio sending, and click **Connect**. Pairing and connection run in sequence. The PIN travels through a local process pipe and is never saved in config or command arguments.
-4. Click **Start messaging** when connected. The saved connection is used on future launches; setup is also available from **⋮ → Connection setup**.
-5. If an old pairing will not connect, disconnect other apps, restart the node, enter its current PIN, and choose **Repair pairing**. This replaces only the selected node's Bluetooth bond and reconnects it.
-6. **Troubleshooting** includes connection checks and component repair. Configuration repair backs up existing settings before restoring safe defaults.
-
-The popup loads without Qt Location installed. The messaging/map view loads separately. The setup UI/helper boundary has been checked on ARM64; the guided repair action should also be verified with a node that needs re-pairing before release.
-
-The scripts in `scripts/` remain available for advanced/manual installation. They preserve existing configuration and do not enable AI or transmissions automatically.
-
-### Try without hardware
-
-From a source checkout, use two terminals:
+Run this once in a terminal:
 
 ```sh
-python3 -m meshcore_bridge.daemon --config config.example.toml --demo
+omarchy plugin add https://github.com/ivan-theaitradeoff/meshcore-atlas --enable
 ```
 
-```sh
-quickshell -p Preview.qml
-```
+Then click the Meshcore Atlas icon in your bar. Continue in the app:
 
-Demo mode uses a separate history database and never transmits RF. Stop any live bridge first because the socket is shared. Close the window and stop the demo daemon when finished.
+1. Set up your node with the MeshCore phone app first. Disconnect it in that app, then forget/unpair it in your phone's Bluetooth settings.
+2. Keep the node powered on near the computer. Close any other app using it.
+3. Follow **Connect a node** to install components, find your node, and choose Bluetooth or USB.
+4. For Bluetooth pairing, enter the current PIN displayed on the node. Choose whether to allow radio sending, then connect.
+5. Start messaging. Channels already saved on the node will appear. If Public needs setup, follow its in-app prompt to import the channel key from the MeshCore phone app.
 
-## Local AI
+Setup opens on first use. You can reopen it from **node name → ⋮ → Connection setup**. The app remembers your connection and last conversation.
 
-AI is disabled by default. Run your model server separately and bind it to loopback only. Click **Connect Local AI**, follow the guide, and configure the server in **Local AI Settings**. Supported server settings:
+## Connect local AI
 
-- LM Studio: `provider = "openai"`, `endpoint = "http://127.0.0.1:1234"`.
-- Ollama: `provider = "ollama"`, `endpoint = "http://127.0.0.1:11434"`.
-- llama.cpp or another compatible server: `provider = "openai"` and its loopback base URL, without `/v1`.
-- Set `model` to an installed model, `private_channels = ["your-private-channel"]`, and `enabled = true`. RF sending must also be enabled.
+Local AI is optional and disabled by default. No models are included or downloaded by this plugin.
 
-Only explicitly allowed private channels can invoke AI. Public/hashtag channels and direct messages are excluded. **Anyone with the private channel key can invoke AI and its model commands.** Channel display names are not authenticated sender identities; `sender_allowlist` is reserved and is not enforced for channel access.
+1. Run a local model server on the computer connected to the desktop node. LM Studio supports the full model-management workflow. Ollama and compatible servers support replies, but not all model-management commands.
+2. Click **Connect Local AI** and follow the guide. Set the loopback server address in **Local AI Settings**; LM Studio commonly uses `http://127.0.0.1:1234` and Ollama `http://127.0.0.1:11434`.
+3. Create a private channel and add the same channel name and key to the MeshCore app on your separate personal node/phone. A repeater can extend coverage where needed; it is not required for nodes within direct range.
+4. Select the private channel in **Allowed private AI channels**, enable replies, and save preferences. Radio sending must also be enabled.
+5. Select a model. Send `/commands` from your personal node to check the connection.
 
-Open the node-name **⋮ → Local AI Settings** to change reply enablement, message limits, cooldowns and timeout. Saved preferences override the corresponding TOML fields after restart. Endpoint and allowed channels can be configured in this settings popup. Model listing/loading and context controls use LM Studio's native API; other providers support inference but not these management controls.
-
-From another node in the allowed private channel:
-
-| Message | Action |
+| Message | What it does |
 | --- | --- |
-| `/commands` | List commands |
-| `@ai models` | List available models (LM Studio) |
-| `@ai use N` | Select/load numbered model (LM Studio) |
-| `@ai status` | Report model, active context when available, and busy state |
-| `@ai context 128k` | Request 131,072-token context (LM Studio; model/memory permitting) |
+| `/commands` | Show available commands |
+| `@ai models` | List models in LM Studio |
+| `@ai use N` | Select/load a numbered model |
+| `@ai status` | Show the model, active context when available, and busy/ready state |
+| `@ai context 128k` | Request 131,072-token context, if the model and available memory support it |
 | `@ai reset` | Clear your conversation memory |
 
-After a successful model selection, ordinary messages in the allowed channel become prompts. Remember conversations is enabled by default. Recent exchanges are stored locally per channel and sender display name. Use `@ai reset` to clear your conversation memory; disabling the toggle skips stored memory without erasing it. Display names are not authenticated identities. Context capacity is not a count of conversation tokens used. Model changes may use substantial memory; context changes unload/reload the selected instance and attempt rollback on failure.
+After successful model selection, send ordinary messages to chat. Long replies are split into numbered radio messages, ten seconds apart. Longer questions can be sent as `1/2 first part`, then `2/2 second part`; incomplete questions expire after five minutes. There is no automatic retransmission.
 
-Long replies are split into at most 12 numbered, UTF-8-safe packets, ten seconds apart. Longer questions can be sent as `1/2 first part`, then `2/2 second part`. Missing parts expire after five minutes; there is no automatic retransmission. Only one multipart question per channel/display-name pair is supported. Input/output bounds and one active AI operation limit resource use. No model tools or arbitrary shell execution are provided.
+**Remember conversations** is enabled by default. It uses bounded recent exchanges, not the entire context window. Memory is separated by channel and sender display name; display names are not authenticated identities. Turning memory off stops using it but does not erase stored records. Anyone holding an allowed private channel's key can invoke AI and its model commands.
 
-## Data, network and limitations
+### Default AI settings
 
-- Bluetooth messaging and LM Studio inference have been exercised with real hardware. Other firmware/server combinations may differ.
-- Heard repeats are received copies, **not recipient acknowledgements or unique repeater counts**. Tracking the last 100 sends is held in memory; saved counts survive restart, active tracking does not.
-- Signal and path fields appear only when supplied by the node/library. Old messages cannot be backfilled.
-- The UI displays the most recent 100 messages per conversation; older records remain subject to retention. History is plaintext, locally stored with owner-only permissions.
-- Contacts and locations are advertised data and may be stale. Offline maps are not implemented. Opening Map fetches tiles from OpenStreetMap over HTTPS, exposing your IP and viewed map area to the tile service; node records are not uploaded. No bulk download or prefetch.
-- Channel secrets are excluded from normal snapshots/logs, but explicitly shown by Share/Create actions. QR imports use local images or pasted links, not a camera.
-- The bridge automatically retries after a radio disconnect. Keep the node powered on nearby; the app shows reconnecting while it waits.
-- Node multi-field writes are not atomic: if a save fails, reopen settings to inspect which changes applied.
-- Runtime socket: `$XDG_RUNTIME_DIR/meshcore-bridge/bridge.sock`, owner-only. History: `~/.local/state/meshcore-bridge/history.sqlite3`. Map/window preferences: `~/.config/mesh-atlas-*.ini`.
-- The AI client accepts literal loopback HTTP endpoints only, refuses redirects and environment proxies, and does not start a network listener. The map is the UI's separate online feature.
+| Setting | Default |
+| --- | --- |
+| AI replies / allowed channels | Disabled / none |
+| Maximum question / answer | 1,600 characters each |
+| Generation limit | 1,024 tokens |
+| Channel / global cooldown | 0 seconds / 0 seconds |
+| Response timeout | 120 seconds |
+| Conversation memory | Enabled |
 
-Map data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright). Map usage follows the [tile usage policy](https://operations.osmfoundation.org/policies/tiles/). No map tiles, mobile screenshots, or user conversations are distributed in the release.
+## Privacy and limitations
 
-## Update and removal
+- The release includes no personal conversations, node settings, private keys, screenshots, or models. Runtime data stays separate from the plugin code.
+- Local history and AI memory are stored in plaintext with restricted file creation permissions. Private channel messages are available to other holders of the channel key.
+- Opening the online map contacts OpenStreetMap. The tile service sees your IP address and requested map area. Offline maps are not implemented.
+- “Heard repeats” counts received copies, not confirmed delivery or unique repeaters.
+- Senders heard only in channel messages are not verified direct-message contacts. Clicking a **heard** entry opens its channel.
+- Only the most recent 100 messages per conversation are displayed. Older records remain subject to retention settings.
+- Channel removal/creation through the app separates the old slot's local history. Channel replacements made outside the app are not guaranteed to be distinguished from the previous channel; review local history before reusing a slot.
+- Multi-field node changes are not atomic. If a save fails, reopen settings to inspect the result.
 
-Update with `omarchy plugin update meshcore.atlas`, open Connection setup → Update / repair components, then Connect. Close and reopen the app. Existing config/history are retained.
+Read [Privacy and permissions](docs/PRIVACY.md) before enabling AI or sharing channel keys.
 
-To remove, close the app and run these **before** removing the plugin folder:
+## Troubleshooting
+
+| Problem | Next step |
+| --- | --- |
+| Node not found | Disconnect the phone/other apps, restart the node, and search again. |
+| Paired but cannot connect | Enter the current PIN and use **Repair pairing** in Connection setup. |
+| Bridge offline | Open Connection setup → **Troubleshooting** or **Update / repair components**. |
+| AI does not reply | Check the local server, selected model, allowed channel, saved reply preferences, and radio sending permission. |
+| Reply arrives in pieces | Wait for the numbered parts; they are spaced ten seconds apart. Radio delivery is not guaranteed. |
+
+When reporting a problem, include the app version, operating-system version, transport, and error text. **Remove message contents, device addresses, channel keys, PINs, personal names, and location details from screenshots and logs.**
+
+## Update and uninstall
+
+Update the plugin, then open **Connection setup → Update / repair components** and reconnect:
+
+```sh
+omarchy plugin update meshcore.atlas
+```
+
+To uninstall, close the app and run these before removing its folder:
 
 ```sh
 bash ~/.config/omarchy/plugins/meshcore.atlas/scripts/remove-bridge.sh
 omarchy plugin remove meshcore.atlas
 ```
 
-Removal stops/disables the service and deletes its dedicated Python environment. Configuration, history, favourites and model preferences remain on disk for recovery. Delete those explicitly only if you also want to erase personal data. The plugin does not uninstall system packages or your model server.
+Uninstall stops the bridge and removes its Python environment. Settings and history are retained so they can be recovered. See [stored data](docs/PRIVACY.md#stored-data) if you want to erase them separately. System packages and AI models are not removed.
 
-## Release contents
+## License and acknowledgments
 
-The distribution contains only explicitly listed runtime source files, generic defaults, documentation, and license. Development launchers, Git history, tests, credentials, screenshots, local configuration, databases, caches, and model files are excluded. See [release notes](docs/RELEASE.md). Licensed under MIT; dependencies retain their own licenses and are not bundled.
-
-## Fresh-install defaults
-
-AI replies are off until explicitly enabled for selected private channels. Defaults: 1,600 question characters, 1,600 answer characters, 1,024 generation tokens, zero channel/global cooldown, and a 120-second response timeout. No node address, pairing PIN, private channel, conversation, or model file is included.
+[MIT](LICENSE). Python, Qt, and radio dependencies retain their own licenses. Map data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright); map use follows the [tile usage policy](https://operations.osmfoundation.org/policies/tiles/).
