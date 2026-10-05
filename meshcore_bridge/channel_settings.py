@@ -27,9 +27,10 @@ async def notify(bridge, target, text):
     name = bridge.radio.node.get('identity', {}).get('name', '')
     if policy == 'none' or (policy == 'mentions' and (not name or not any(t in text for t in ('@['+name+']', '@'+name)))):
         return
-    title = next((c['name'] for c in bridge.radio.channels if c['id'] == target), 'MeshCore')
+    # Never expose received content or node/channel names to argv or the
+    # desktop notification service. Mention matching stays inside this process.
     try:
-        proc = await asyncio.create_subprocess_exec('notify-send', '--app-name=MeshCore', '--', title, text[:500], stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL)
+        proc = await asyncio.create_subprocess_exec('notify-send', '--app-name=Meshcore Atlas', '--', 'Meshcore Atlas', 'New message received. Open the app to read it.', stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL)
         await asyncio.wait_for(proc.wait(), 5)
     except (OSError, TimeoutError):
         pass

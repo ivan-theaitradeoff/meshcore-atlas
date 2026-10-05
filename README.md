@@ -4,7 +4,7 @@
 
 Connect a MeshCore companion node over Bluetooth or USB, manage conversations, and optionally make a local language model available to your own private mesh channel.
 
-[Download 0.2.1](https://github.com/ivan-theaitradeoff/meshcore-atlas/releases/tag/v0.2.1) · [Report an issue](https://github.com/ivan-theaitradeoff/meshcore-atlas/issues) · [Privacy and permissions](docs/PRIVACY.md)
+[Download 0.2.2](https://github.com/ivan-theaitradeoff/meshcore-atlas/releases/tag/v0.2.2) · [Report an issue](https://github.com/ivan-theaitradeoff/meshcore-atlas/issues) · [Privacy and permissions](docs/PRIVACY.md)
 
 > **Early release.** Bluetooth messaging and local AI have been exercised with hardware. USB is implemented but has not been hardware-tested. The Omarchy marketplace submission is awaiting maintainer review; this is not an official MeshCore client or a security-certified product.
 
@@ -80,6 +80,8 @@ After successful model selection, send ordinary messages to chat. Long replies a
 | Conversation memory | Enabled |
 
 ## Privacy and limitations
+
+Desktop notifications show only a generic new-message alert. Message text and sender/channel names stay out of notification content and process arguments.
 
 - The release includes no personal conversations, node settings, private keys, screenshots, or models. Runtime data stays separate from the plugin code.
 - Local history and AI memory are stored in plaintext with restricted file creation permissions. Private channel messages are available to other holders of the channel key.

@@ -50,3 +50,7 @@ The public GitHub repository and release identify their GitHub owner. The plugin
 ## Repository preview
 
 The repository preview is an actual screenshot published at the repository owner’s explicit request. It contains visible node names, messages, and status information. Embedded image metadata is absent; removing metadata does not hide visible content. The previously audited 0.2.1 release ZIP is unchanged and does not contain this preview.
+
+## Notification privacy fix (0.2.2)
+
+Versions before 0.2.2 passed channel names and received channel message text to `notify-send` arguments. Local users able to inspect process command lines could read that text during the notification process. Upgrade to 0.2.2 and update bridge components in the app. Notifications now contain only fixed generic text, regardless of channel classification; mention filtering occurs within the bridge. This also keeps content out of desktop notification history.
