@@ -49,7 +49,7 @@ The public GitHub repository and release identify their GitHub owner. The plugin
 
 ## Repository preview
 
-The repository preview is an actual screenshot published at the repository owner’s explicit request. It contains visible node names, messages, and status information. Embedded image metadata is absent; removing metadata does not hide visible content. The previously audited 0.2.1 release ZIP is unchanged and does not contain this preview.
+The repository preview is an actual screenshot published at the repository owner’s explicit request. It contains visible node names, channel names, messages, mapped locations, and status information. Embedded image metadata is absent; removing metadata does not hide visible content. The source-only release ZIPs exclude this preview.
 
 ## Notification privacy fix (0.2.2)
 

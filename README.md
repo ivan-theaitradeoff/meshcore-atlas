@@ -10,7 +10,7 @@ Connect a MeshCore companion node over Bluetooth or USB, manage conversations, a
 
 ![Meshcore Atlas messaging interface](preview.png)
 
-*Screenshot from an earlier interface version. Visible node names and messages are included with the repository owner’s approval; image metadata has been removed.*
+*Split view with messages and the node map. Visible node names, channel names, messages, mapped locations, and status information are included with the repository owner’s approval; image metadata has been removed.*
 
 ## What you can do
 

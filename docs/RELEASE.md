@@ -13,6 +13,6 @@ Update the plugin through Omarchy, then open **Connection setup → Update / rep
 
 ## Packaging and privacy
 
-The attached source-only ZIP is built from an explicit file list. It excludes runtime settings, databases, logs, screenshots, pairing credentials, channel keys, local model files, and development history. The GitHub repository retains the previously approved preview image unchanged; it is excluded from the ZIP.
+The attached source-only ZIP is built from an explicit file list. It excludes runtime settings, databases, logs, screenshots, pairing credentials, channel keys, local model files, and development history. The GitHub repository includes the explicitly approved split-view preview image; it is excluded from the ZIP.
 
 USB remains implemented but not hardware-tested. Online maps need internet access. Radio delivery is not guaranteed.
