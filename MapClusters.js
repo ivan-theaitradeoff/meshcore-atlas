@@ -3,7 +3,7 @@
 // Group projected positions, so density follows zoom rather than geographic distance.
 function build(points, zoom) {
     const groups = []
-    const radius = zoom < 10 ? 66 : zoom < 13 ? 54 : 42
+    const radius = zoom < 10 ? 60 : zoom < 13 ? 52 : 45
     points.slice().sort((a,b) => a.node.id.localeCompare(b.node.id)).forEach(function(p) {
         let group = null
         let best = radius * radius
@@ -21,7 +21,7 @@ function build(points, zoom) {
         }
     })
     // Reserve marker circles first, then admit only non-overlapping label rectangles.
-    const boxes = groups.map(g => ({left:g.x-24,right:g.x+24,top:g.y-24,bottom:g.y+24}))
+    const boxes = groups.map(g => ({left:g.x-22,right:g.x+22,top:g.y-22,bottom:g.y+22}))
     if (zoom >= 10) {
         for (const g of groups) {
             if (g.members.length !== 1) continue

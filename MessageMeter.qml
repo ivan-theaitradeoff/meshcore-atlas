@@ -3,6 +3,7 @@ import QtQuick.Controls
 
 Item {
     id: root
+    property var theme
     property string message: ""
     property int limit: 160
     readonly property int used: byteLength(message)
@@ -32,13 +33,13 @@ Item {
             ctx.clearRect(0, 0, width, height)
             const radius = Math.min(width, height) / 2 - 4
             ctx.lineWidth = 3
-            ctx.strokeStyle = "#465362"
+            ctx.strokeStyle = root.theme.selected
             ctx.beginPath(); ctx.arc(width/2, height/2, radius, 0, Math.PI*2); ctx.stroke()
-            ctx.strokeStyle = root.overLimit ? "#ef9b91" : root.used >= root.limit * 0.9 ? "#e3b98f" : "#bdd0e5"
+            ctx.strokeStyle = root.overLimit ? root.theme.error : root.used >= root.limit * 0.9 ? root.theme.warning : root.theme.foreground
             ctx.beginPath(); ctx.arc(width/2, height/2, radius, -Math.PI/2, -Math.PI/2 + Math.PI*2*Math.min(1,root.used/Math.max(1,root.limit))); ctx.stroke()
         }
     }
-    Text { anchors.centerIn: parent; visible: root.used >= root.limit * 0.9; text: root.limit - root.used; font.pixelSize: 10; color: root.overLimit ? "#ef9b91" : "#c7d3df" }
+    Text { anchors.centerIn: parent; visible: root.used >= root.limit * 0.9; text: root.limit - root.used; font.pixelSize: 10; color: root.overLimit ? root.theme.error : root.theme.foreground }
     HoverHandler { id: hover }
     ToolTip.visible: hover.hovered
     ToolTip.text: used + " / " + limit + " bytes"

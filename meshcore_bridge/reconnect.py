@@ -2,7 +2,7 @@
 import asyncio
 
 
-async def maintain_connection(radio, *, monitor_seconds=2, retry_seconds=5, timeout=45):
+async def maintain_connection(radio, *, monitor_seconds=2, retry_seconds=5, timeout=90):
     if radio.config['transport'] == 'demo':
         await radio.connect()
         return

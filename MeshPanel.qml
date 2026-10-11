@@ -5,10 +5,23 @@ import QtQuick.Layouts
 
 Rectangle {
     id: root
+    property var theme
     signal connectionRequested()
     required property var client
     property bool active: false
     property string sidebarSection: "channels"
+    property bool messagesVisible: true
+    property bool mapVisible: false
+    property bool mapLoaded: false
+    function toggleView(section) {
+        if (section === "map") {
+            mapLoaded = true
+            mapVisible = !mapVisible
+        } else {
+            messagesVisible = sidebarSection === section ? !messagesVisible : true
+            sidebarSection = section
+        }
+    }
     readonly property bool hasPublic: client.channels.some(function(item) { return item.id.indexOf("ch:") === 0 && item.name.toLowerCase().replace(/^#\s*/, "") === "public" })
     readonly property bool publicSetup: client.target === "setup:public"
     readonly property var channelItems: {
@@ -75,31 +88,33 @@ Rectangle {
         height: Math.min(680, parent.height - 24)
         modal: true; focus: true; padding: 18
         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-        background: Rectangle { color: "#202a36"; border.color: "#647184"; radius: 8 }
+        background: Rectangle { color: root.theme.surface; border.color: root.theme.border; radius: 8 }
         ColumnLayout {
             anchors.fill: parent; spacing: 10
             RowLayout {
                 Layout.fillWidth: true
-                Label { text: "Node Details"; color: "#c7d3df"; font.pixelSize: 20; Layout.fillWidth: true }
+                Label { text: "Node Details"; color: root.theme.foreground; font.pixelSize: 20; Layout.fillWidth: true }
                 Button { text: "×"; onClicked: nodeDetailsPopup.close() }
             }
             NodeDetails {
+                theme: root.theme
                 Layout.fillWidth: true; Layout.fillHeight: true
                 node: root.client.node
                 connected: root.client.online && root.client.connectionState.indexOf("connected") === 0
             }
         }
     }
-    LocalAiGuide { id: aiGuide; parent: root; onCreateChannel: addChannel.begin("private_create"); onOpenSettings: aiSettings.begin() }
-    AiSettings { id: aiSettings; parent: root; client: root.client }
-    NodeSettings { id: nodeSettings; parent: root; client: root.client }
-    ChannelSettings { id: channelSettings; parent: root; client: root.client }
-    ContactActions { id: contactActions; parent: root; client: root.client }
-    AddChannel { id: addChannel; parent: root; client: root.client }
+    LocalAiGuide { id: aiGuide; theme: root.theme; parent: root; onCreateChannel: addChannel.begin("private_create"); onOpenSettings: aiSettings.begin() }
+    AiSettings { id: aiSettings; theme: root.theme; parent: root; client: root.client }
+    NodeSettings { id: nodeSettings; theme: root.theme; parent: root; client: root.client }
+    ChannelSettings { id: channelSettings; theme: root.theme; parent: root; client: root.client }
+    ContactActions { id: contactActions; theme: root.theme; parent: root; client: root.client }
+    AddChannel { id: addChannel; theme: root.theme; parent: root; client: root.client }
     MessageActions {
         id: messageActions
         objectName: "messageActions"
         parent: root
+        theme: root.theme
         isChannel: root.client.target.indexOf("ch:") === 0
         onReplyRequested: function(sender) {
             if (root.client.target.indexOf("ch:") === 0 && sender !== "me" && sender !== "channel peer")
@@ -109,10 +124,10 @@ Rectangle {
         }
         onActionRequested: function(action, messageId) { root.client.request(action, "", messageId) }
     }
-    color: "#171d24"
-    border.color: "#444e5c"
-    onActiveChanged: if (active && client) client.request("read")
-    Timer { interval: 1600; running: root.active; repeat: true; onTriggered: root.client.request("read") }
+    color: root.theme.background
+    border.color: root.theme.border
+    onActiveChanged: if (active && messagesVisible && client) client.request("read")
+    Timer { interval: 1600; running: root.active && root.messagesVisible; repeat: true; onTriggered: root.client.request("read") }
     ColumnLayout {
         anchors.fill: parent; anchors.margins: 14; spacing: 12
         Item {
@@ -121,10 +136,10 @@ Rectangle {
             RowLayout {
             id: headerRow
             anchors.fill: parent
-            Label { text: root.client.node.identity && root.client.node.identity.name ? root.client.node.identity.name : "MESH ATLAS"; textFormat: Text.PlainText; Layout.maximumWidth: 300; elide: Text.ElideRight; color: "#b8cde3"; font.family: "monospace"; font.bold: true }
+            Label { text: root.client.node.identity && root.client.node.identity.name ? root.client.node.identity.name : "MESH ATLAS"; textFormat: Text.PlainText; Layout.maximumWidth: 300; elide: Text.ElideRight; color: root.theme.foreground; font.family: "monospace"; font.bold: true }
             ToolButton {
                 text: "⋮"; Accessible.name: "Node menu"
-                contentItem: Text { text: "⋮"; color: "#c7d3df"; font.pixelSize: 20; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
+                contentItem: Text { text: "⋮"; color: root.theme.foreground; font.pixelSize: 20; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
                 onClicked: nodeMenu.popup()
                 Menu {
                     id: nodeMenu
@@ -135,21 +150,21 @@ Rectangle {
                 }
             }
             Item { id: headerSpace; Layout.fillWidth: true }
-            ActionButton { text: "Connect Local AI"; onClicked: aiGuide.open() }
-            Label { text: root.client.connectionState; color: "#899db1"; font.family: "monospace" }
+            ActionButton { theme: root.theme; text: "Connect Local AI"; onClicked: aiGuide.open() }
+            Label { text: root.client.connectionState; color: root.theme.muted; font.family: "monospace" }
         }
             Label {
                 anchors.centerIn: parent
                 width: Math.max(0, Math.min(parent.width / 2 - headerSpace.x, headerSpace.x + headerSpace.width - parent.width / 2) * 2 - 16)
                 text: "Meshcore Atlas"
-                color: "#c7d3df"
+                color: root.theme.foreground
                 font.family: "monospace"
                 font.bold: true
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
             }
         }
-        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: "#414956" }
+        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: root.theme.border }
         SplitView {
             id: conversationSplit
             objectName: "conversationSplit"
@@ -161,12 +176,12 @@ Rectangle {
                 Rectangle {
                     anchors.centerIn: parent
                     width: 2; height: parent.height
-                    color: parent.SplitHandle.pressed ? "#bdd0e5" : parent.SplitHandle.hovered ? "#809bb6" : "#414956"
+                    color: parent.SplitHandle.pressed ? root.theme.foreground : parent.SplitHandle.hovered ? root.theme.muted : root.theme.border
                 }
             }
             Rectangle {
                 objectName: "navigationSidebar"
-                color: "#2e3540"
+                color: root.theme.sidebar
                 SplitView.preferredWidth: 175
                 SplitView.minimumWidth: 150
                 SplitView.maximumWidth: Math.max(150, conversationSplit.width - 300)
@@ -186,20 +201,22 @@ Rectangle {
                             objectName: modelData.section + "Tab"
                             Layout.fillWidth: true; Layout.fillHeight: true
                             enabled: true
+                            checkable: true
+                            checked: modelData.section === "map" ? root.mapVisible : root.messagesVisible && root.sidebarSection === modelData.section
                             Accessible.name: modelData.label
                             ToolTip.visible: hovered
                             ToolTip.text: modelData.label
                             background: Rectangle {
                                 radius: 4
-                                color: root.sidebarSection === tabButton.modelData.section ? "#465362" : tabButton.hovered ? "#384452" : "transparent"
+                                color: tabButton.checked ? root.theme.selected : tabButton.hovered ? root.theme.hover : "transparent"
                             }
                             contentItem: Image {
-                                source: "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="' + tabButton.modelData.path + '" fill="none" stroke="#bdd0e5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>')
+                                source: "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="' + tabButton.modelData.path + '" fill="none" stroke="' + root.theme.foreground + '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>')
                                 sourceSize.width: 24; sourceSize.height: 24
                                 fillMode: Image.PreserveAspectFit
                                 opacity: tabButton.enabled ? 1 : 0.35
                             }
-                            onClicked: root.sidebarSection = modelData.section
+                            onClicked: root.toggleView(modelData.section)
                         }
                     }
                 }
@@ -208,14 +225,14 @@ Rectangle {
                     anchors { top: navigation.bottom; left: parent.left; right: parent.right; bottom: addButton.top; margins: 5 }
                     clip: true
                     ScrollBar.vertical: ScrollBar {}
-                    model: root.sidebarSection === "map" ? [] : root.sidebarSection === "contacts" ? root.contactItems : root.channelItems
+                    model: !root.messagesVisible ? [] : root.sidebarSection === "contacts" ? root.contactItems : root.channelItems
                     delegate: Rectangle {
                         id: channelRow
                         required property var modelData
                         width: ListView.view.width; height: 48
-                        color: root.client.target === channelRow.modelData.id ? "#465362" : "transparent"
-                        Text { anchors.fill: parent; anchors.margins: 8; anchors.rightMargin: 32; text: (channelRow.modelData.favourite ? "★ " : "") + channelRow.modelData.name.replace(/^DM · /, "") + (channelRow.modelData.heard_only ? " · heard" : ""); textFormat: Text.PlainText; color: "#bdd0e5"; font.family: "monospace"; elide: Text.ElideRight; verticalAlignment: Text.AlignVCenter }
-                        MouseArea { anchors.fill: parent; onClicked: { root.client.target = channelRow.modelData.source_target || channelRow.modelData.id; root.client.request("read") } }
+                        color: root.client.target === channelRow.modelData.id ? root.theme.selected : "transparent"
+                        Text { anchors.fill: parent; anchors.margins: 8; anchors.rightMargin: 32; text: (channelRow.modelData.favourite ? "★ " : "") + channelRow.modelData.name.replace(/^DM · /, "") + (channelRow.modelData.heard_only ? " · heard" : ""); textFormat: Text.PlainText; color: root.theme.foreground; font.family: "monospace"; elide: Text.ElideRight; verticalAlignment: Text.AlignVCenter }
+                        MouseArea { anchors.fill: parent; onClicked: { root.messagesVisible = true; root.client.target = channelRow.modelData.source_target || channelRow.modelData.id; root.client.request("read") } }
                         HoverHandler { id: rowHover }
                         ToolTip.visible: rowHover.hovered && !!channelRow.modelData.heard_only
                         ToolTip.text: "Heard in channel · Open channel. Direct messaging requires a saved node contact."
@@ -223,7 +240,7 @@ Rectangle {
                             id: moreButton
                             anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
                             width: 30; height: 38; text: "⋮"
-                            contentItem: Text { text: "⋮"; color: "#c7d3df"; font.pixelSize: 20; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
+                            contentItem: Text { text: "⋮"; color: root.theme.foreground; font.pixelSize: 20; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
                             visible: !channelRow.modelData.heard_only && channelRow.modelData.id !== "setup:public" && (rowHover.hovered || hovered || contactMenu.visible || channelMenu.visible)
                             Accessible.name: root.sidebarSection === "contacts" ? "Contact actions" : "Channel actions"
                             onClicked: root.sidebarSection === "contacts" ? contactMenu.popup() : channelMenu.popup()
@@ -246,13 +263,14 @@ Rectangle {
                             }
                         }
                     }
-                    Label { anchors.centerIn: parent; visible: root.sidebarSection !== "map" && !parent.count; text: root.sidebarSection === "contacts" ? "No contacts heard yet" : "No channels\nConnect a radio\nor start demo"; color: "#899db1"; font.family: "monospace" }
+                    Label { anchors.centerIn: parent; visible: root.messagesVisible && !parent.count; text: root.sidebarSection === "contacts" ? "No contacts heard yet" : "No channels\nConnect a radio\nor start demo"; color: root.theme.muted; font.family: "monospace" }
                 }
                 ActionButton {
                     id: addButton
+                    theme: root.theme
                     objectName: "addChannelButton"
                     anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 5 }
-                    visible: root.sidebarSection === "channels"
+                    visible: root.messagesVisible && root.sidebarSection === "channels"
                     height: visible ? implicitHeight : 0
                     text: "+ Add channel"
                     onClicked: addMenu.popup()
@@ -268,25 +286,19 @@ Rectangle {
                     }
                 }
             }
-            Loader {
-                active: root.sidebarSection === "map"
-                visible: active
-                SplitView.fillWidth: active
-                SplitView.preferredWidth: active ? 500 : 0
-                sourceComponent: MapPanel { client: root.client; onOpenContact: function(target) { root.client.target = target; root.sidebarSection = "contacts"; root.client.request("read") } }
-            }
             ColumnLayout {
-                visible: root.sidebarSection !== "map"
+                objectName: "messagesPane"
+                visible: root.messagesVisible
                 SplitView.fillWidth: visible
                 SplitView.minimumWidth: 280
-                Label { text: root.conversationName; textFormat: Text.PlainText; color: "#b8cde3"; font.family: "monospace"; Layout.fillWidth: true; elide: Text.ElideRight }
+                Label { text: root.conversationName; textFormat: Text.PlainText; color: root.theme.foreground; font.family: "monospace"; Layout.fillWidth: true; elide: Text.ElideRight }
                 ColumnLayout {
                     visible: root.publicSetup
                     Layout.fillWidth: true; Layout.fillHeight: true
                     Item { Layout.fillHeight: true }
-                    Label { text: "Set up Public"; color: "#c7d3df"; font.pixelSize: 22 }
-                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; color: "#c7d3df"; text: "On your phone, open the MeshCore app and select Public. Open the three-dot menu and choose Share, then copy the Secret Key. Paste it below to add Public to this node." }
-                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; color: "#9db2c6"; text: "If you use this same node with your phone to get the key, disconnect it from the phone afterward so Mesh Atlas can reconnect." }
+                    Label { text: "Set up Public"; color: root.theme.foreground; font.pixelSize: 22 }
+                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; color: root.theme.foreground; text: "On your phone, open the MeshCore app and select Public. Open the three-dot menu and choose Share, then copy the Secret Key. Paste it below to add Public to this node." }
+                    Label { Layout.fillWidth: true; wrapMode: Text.WordWrap; color: root.theme.muted; text: "If you use this same node with your phone to get the key, disconnect it from the phone afterward so Mesh Atlas can reconnect." }
                     Button { text: "Paste Public channel key…"; enabled: root.client.online; onClicked: addChannel.begin("public_import") }
                     Item { Layout.fillHeight: true }
                 }
@@ -310,8 +322,8 @@ Rectangle {
                         Column {
                             id: messageContent
                             width: parent.width; spacing: 4
-                        Text { width: parent.width; text: messageRow.modelData.sender + " · " + messageRow.modelData.status; textFormat: Text.PlainText; elide: Text.ElideRight; color: "#809bb6"; font.family: "monospace"; font.pixelSize: 11 }
-                        Text { width: parent.width; text: messageRow.modelData.text; textFormat: Text.PlainText; wrapMode: Text.Wrap; color: "#c7d3df"; font.family: "monospace"; font.pixelSize: 13 }
+                        Text { width: parent.width; text: messageRow.modelData.sender + " · " + messageRow.modelData.status; textFormat: Text.PlainText; elide: Text.ElideRight; color: root.theme.muted; font.family: "monospace"; font.pixelSize: 11 }
+                        Text { width: parent.width; text: messageRow.modelData.text; textFormat: Text.PlainText; wrapMode: Text.Wrap; color: root.theme.foreground; font.family: "monospace"; font.pixelSize: 13 }
                         }
                         MouseArea {
                             anchors.fill: parent
@@ -320,9 +332,9 @@ Rectangle {
                             onClicked: { messageActions.message = messageRow.modelData; messageActions.open() }
                         }
                     }
-                    Label { anchors.centerIn: parent; visible: !root.client.messages.length; text: "No messages on this channel"; color: "#899db1"; font.family: "monospace" }
+                    Label { anchors.centerIn: parent; visible: !root.client.messages.length; text: "No messages on this channel"; color: root.theme.muted; font.family: "monospace" }
                 }
-                Label { Layout.fillWidth: true; text: root.client.error; visible: text.length > 0; wrapMode: Text.Wrap; color: "#e3b98f" }
+                Label { Layout.fillWidth: true; text: root.client.error; visible: text.length > 0; wrapMode: Text.Wrap; color: root.theme.warning }
                 RowLayout {
                     Layout.fillWidth: true
                     TextField {
@@ -334,11 +346,12 @@ Rectangle {
                         Layout.fillWidth: true
                         placeholderText: root.client.canSend ? "Message · " + messageMeter.limit + " byte limit" : "RF locked / disconnected"
                         maximumLength: messageMeter.limit
-                        color: "#c7d3df"; placeholderTextColor: "#a8bfd6"; selectionColor: "#465362"; selectedTextColor: "#ffffff"; font.family: "monospace"
-                        background: Rectangle { color: "#2e3540"; border.color: "#647184" }
+                        color: root.theme.foreground; placeholderTextColor: root.theme.muted; selectionColor: root.theme.selected; selectedTextColor: root.theme.foreground; font.family: "monospace"
+                        background: Rectangle { color: root.theme.sidebar; border.color: root.theme.border }
                     }
-                    MessageMeter { id: messageMeter; objectName: "messageMeter"; message: composer.text; limit: root.client.messageByteLimit || 160; Layout.preferredWidth: 32; Layout.preferredHeight: 32 }
+                    MessageMeter { id: messageMeter; theme: root.theme; objectName: "messageMeter"; message: composer.text; limit: root.client.messageByteLimit || 160; Layout.preferredWidth: 32; Layout.preferredHeight: 32 }
                     ActionButton {
+                        theme: root.theme
                         objectName: "sendButton"
                         text: root.client.sendPending ? "Sending…" : "Send"
                         enabled: root.client.canSend && !root.client.sendPending && !messageMeter.overLimit && composer.text.trim().length > 0
@@ -346,15 +359,41 @@ Rectangle {
                     }
                 }
             }
+            Loader {
+                objectName: "mapPane"
+                active: root.mapLoaded
+                visible: root.mapVisible
+                SplitView.fillWidth: !root.messagesVisible
+                SplitView.minimumWidth: 240
+                SplitView.preferredWidth: Math.max(240, (conversationSplit.width - 199) / 2)
+                sourceComponent: MapPanel {
+                    client: root.client; theme: root.theme
+                    onOpenContact: function(target) {
+                        root.client.target = target
+                        root.sidebarSection = "contacts"
+                        root.messagesVisible = true
+                        root.client.request("read")
+                    }
+                }
+            }
+            Label {
+                visible: !root.messagesVisible && !root.mapVisible
+                SplitView.fillWidth: true
+                text: "Select Channels, Contacts, or Map to open a view."
+                color: root.theme.muted
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                wrapMode: Text.Wrap
+            }
         }
-        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: "#414956" }
+        Rectangle { Layout.fillWidth: true; Layout.preferredHeight: 1; color: root.theme.border }
         Label {
             Layout.fillWidth: true
             wrapMode: Text.Wrap
             text: "BAT " + (root.client.node.battery && root.client.node.battery.level !== undefined ? (root.client.node.battery.level / 1000).toFixed(2) + " V" : "—")
                   + "   LAST SNR " + (root.client.node.radio && root.client.node.radio.last_snr !== undefined ? root.client.node.radio.last_snr + " dB" : "—")
                   + "   CONTACTS " + (root.client.node.contact_count !== undefined ? root.client.node.contact_count : "—") + "   |   AI " + root.client.ai
-            color: "#899db1"; font.family: "monospace"; font.pixelSize: 11
+            color: root.theme.muted; font.family: "monospace"; font.pixelSize: 11
         }
     }
 }

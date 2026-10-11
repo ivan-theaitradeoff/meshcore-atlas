@@ -20,7 +20,7 @@ The service uses an owner-only Unix socket and restrictive file creation permiss
 | --- | --- |
 | `~/.config/meshcore-bridge/` | Connection/AI configuration and any configuration-repair backups |
 | `~/.local/state/meshcore-bridge/` | Message history, conversation memory, preferences, and local model-selection records |
-| `~/.local/share/meshcore-bridge/` | Installed Python environment |
+| `~/.local/share/meshcore-bridge/` | Installed Python environment and local app-launcher path |
 | `~/.config/mesh-atlas-window.ini` | First-run and last-conversation preferences |
 | `~/.config/mesh-atlas-map.ini` | Last map position and zoom |
 | `$XDG_RUNTIME_DIR/meshcore-bridge/` | Local socket and process lock |
@@ -53,4 +53,4 @@ The repository preview is an actual screenshot published at the repository owner
 
 ## Notification privacy fix (0.2.2)
 
-Versions before 0.2.2 passed channel names and received channel message text to `notify-send` arguments. Local users able to inspect process command lines could read that text during the notification process. Upgrade to 0.2.2 and update bridge components in the app. Notifications now contain only fixed generic text, regardless of channel classification; mention filtering occurs within the bridge. This also keeps content out of desktop notification history.
+Versions before 0.2.2 passed channel names and received channel message text to `notify-send` arguments. Local users able to inspect process command lines could read that text during the notification process. Upgrade to 0.2.2 or newer and update bridge components in the app. Notifications now contain only fixed generic text, regardless of channel classification; mention filtering occurs within the bridge. This also keeps content out of desktop notification history.

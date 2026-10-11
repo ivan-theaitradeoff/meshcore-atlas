@@ -4,6 +4,7 @@ import QtQuick.Layouts
 
 Popup {
     id: root
+    property var theme
     property var message: ({})
     property bool isChannel: true
     property bool showPaths: false
@@ -16,7 +17,7 @@ Popup {
     width: Math.min(540, parent.width - 24)
     height: Math.min(620, parent.height - 24)
     padding: 18
-    background: Rectangle { color: "#202a36"; border.color: "#647184"; radius: 8 }
+    background: Rectangle { color: root.theme.surface; border.color: root.theme.border; radius: 8 }
     onOpened: { showPaths = false; notice = "" }
     function stamp(value) { return value ? new Date(value * 1000).toLocaleString() : "Unavailable for this message" }
     readonly property var meta: message.metadata || ({})
@@ -25,7 +26,7 @@ Popup {
         anchors.fill: parent; spacing: 10
         RowLayout {
             Layout.fillWidth: true
-            Label { text: "Message Actions"; color: "#c7d3df"; font.pixelSize: 20; Layout.fillWidth: true }
+            Label { text: "Message Actions"; color: root.theme.foreground; font.pixelSize: 20; Layout.fillWidth: true }
             Button { text: "×"; onClicked: root.close() }
         }
         ScrollView {
@@ -33,15 +34,15 @@ Popup {
             contentWidth: availableWidth
             ColumnLayout {
                 width: parent.width; spacing: 10
-                Label { text: root.message.sender || ""; textFormat: Text.PlainText; color: "#a8bfd6"; font.bold: true; Layout.fillWidth: true; wrapMode: Text.WrapAnywhere }
-                Label { text: root.message.text || ""; textFormat: Text.PlainText; color: "#c7d3df"; Layout.fillWidth: true; wrapMode: Text.WrapAnywhere }
+                Label { text: root.message.sender || ""; textFormat: Text.PlainText; color: root.theme.muted; font.bold: true; Layout.fillWidth: true; wrapMode: Text.WrapAnywhere }
+                Label { text: root.message.text || ""; textFormat: Text.PlainText; color: root.theme.foreground; Layout.fillWidth: true; wrapMode: Text.WrapAnywhere }
                 Label {
                     visible: Object.keys(root.meta).length === 0
                     text: "This message was saved before metadata capture was added. Its original timing and radio details were not retained."
-                    Layout.fillWidth: true; wrapMode: Text.Wrap; color: "#e3b98f"
+                    Layout.fillWidth: true; wrapMode: Text.Wrap; color: root.theme.warning
                 }
                 Label {
-                    Layout.fillWidth: true; wrapMode: Text.Wrap; color: "#899db1"; font.family: "monospace"
+                    Layout.fillWidth: true; wrapMode: Text.Wrap; color: root.theme.muted; font.family: "monospace"
                     text: "Sent: " + root.stamp(root.meta.sender_timestamp || root.meta.sent_at)
                           + "\nReceived locally: " + root.stamp(root.meta.received_at)
                           + "\nSNR: " + (root.meta.SNR !== undefined ? root.meta.SNR + " dB" : "Unavailable")
@@ -58,7 +59,7 @@ Popup {
                 }
                 Button { text: root.showPaths ? "Hide Message Paths" : "View Message Paths"; Layout.fillWidth: true; onClicked: root.showPaths = !root.showPaths }
                 Label {
-                    visible: root.showPaths; Layout.fillWidth: true; wrapMode: Text.WrapAnywhere; textFormat: Text.PlainText; color: "#c7d3df"
+                    visible: root.showPaths; Layout.fillWidth: true; wrapMode: Text.WrapAnywhere; textFormat: Text.PlainText; color: root.theme.foreground
                     text: root.meta.path ? "Recorded path: " + (Array.isArray(root.meta.path) ? root.meta.path.join(" → ") : root.meta.path)
                           : "No full route was provided for this message. Hop count and hash size are shown above when available."
                 }
@@ -67,9 +68,9 @@ Popup {
                     Layout.fillWidth: true; enabled: !!root.message.can_block
                     onClicked: { root.actionRequested(root.message.blocked ? "unblock" : "block", root.message.id); root.close() }
                 }
-                Label { visible: !!root.message.can_block; Layout.fillWidth: true; wrapMode: Text.Wrap; color: "#899db1"; text: root.isChannel ? "Blocks future messages with this display name on this channel, on this computer only. Channel names are not verified identities. Reopen this message to unblock." : "Blocks future messages from this contact on this computer. Reopen this message to unblock." }
+                Label { visible: !!root.message.can_block; Layout.fillWidth: true; wrapMode: Text.Wrap; color: root.theme.muted; text: root.isChannel ? "Blocks future messages with this display name on this channel, on this computer only. Channel names are not verified identities. Reopen this message to unblock." : "Blocks future messages from this contact on this computer. Reopen this message to unblock." }
                 Button { text: "Delete"; Layout.fillWidth: true; onClicked: deleteConfirm.open() }
-                Label { text: root.notice; visible: text.length > 0; color: "#a8bfd6" }
+                Label { text: root.notice; visible: text.length > 0; color: root.theme.muted }
             }
         }
     }

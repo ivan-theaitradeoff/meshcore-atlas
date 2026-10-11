@@ -2,6 +2,7 @@
 import argparse
 import asyncio
 import fcntl
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -28,9 +29,10 @@ class Bridge:
         self.db = sqlite3.connect(database)
         self.db.execute('CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY, target TEXT, sender TEXT, text TEXT, status TEXT, unread INTEGER)')
         columns = {r[1] for r in self.db.execute('PRAGMA table_info(messages)')}
-        for name, definition in [('metadata', "TEXT NOT NULL DEFAULT '{}'"), ('deleted', 'INTEGER NOT NULL DEFAULT 0')]:
+        for name, definition in [('metadata', "TEXT NOT NULL DEFAULT '{}'"), ('deleted', 'INTEGER NOT NULL DEFAULT 0'), ('dedupe_key', 'TEXT')]:
             if name not in columns:
                 self.db.execute(f'ALTER TABLE messages ADD COLUMN {name} {definition}')
+        self.db.execute('CREATE UNIQUE INDEX IF NOT EXISTS messages_dedupe_key ON messages(dedupe_key) WHERE dedupe_key IS NOT NULL')
         self.db.execute('CREATE TABLE IF NOT EXISTS blocked (target TEXT, sender TEXT, PRIMARY KEY(target,sender))')
         self.db.execute('CREATE TABLE IF NOT EXISTS favourites (key TEXT PRIMARY KEY)')
         self.db.execute('CREATE TABLE IF NOT EXISTS channel_settings (target TEXT PRIMARY KEY, notifications TEXT, days INTEGER)')
@@ -65,12 +67,21 @@ class Bridge:
             return text.split(': ', 1)[0][:128]
         return sender
 
-    def save(self, target, sender, text, status, unread, metadata=None):
+    @staticmethod
+    def packet_dedupe_key(target, sender, text, metadata):
+        timestamp = (metadata or {}).get('sender_timestamp')
+        if not isinstance(timestamp, int) or isinstance(timestamp, bool):
+            return None
+        identity = json.dumps([target, sender, timestamp, text], ensure_ascii=False, separators=(',', ':'))
+        return hashlib.sha256(identity.encode('utf-8')).hexdigest()
+
+    def save(self, target, sender, text, status, unread, metadata=None, dedupe_key=None):
         meta = dict(metadata or {})
         meta.setdefault('received_at' if status == 'received' else 'sent_at', int(time.time()))
-        self.db.execute('INSERT INTO messages(target,sender,text,status,unread,metadata) VALUES(?,?,?,?,?,?)',
-                        (target, sender, text, status, unread, json.dumps(meta)))
+        cursor = self.db.execute('INSERT OR IGNORE INTO messages(target,sender,text,status,unread,metadata,dedupe_key) VALUES(?,?,?,?,?,?,?)',
+                                 (target, sender, text, status, unread, json.dumps(meta), dedupe_key))
         self.db.commit()
+        return cursor.rowcount == 1
 
     def update_repeats(self, packet):
         rows = self.db.execute("SELECT id,metadata FROM messages WHERE target=? AND sender='me' AND deleted=0 ORDER BY id DESC LIMIT 100", (packet['target'],)).fetchall()
@@ -87,7 +98,10 @@ class Bridge:
         label = self.display_sender(sender, text)
         if self.db.execute('SELECT 1 FROM blocked WHERE target=? AND sender=?', (target, label)).fetchone():
             return
-        self.save(target, sender, text[:4096], 'received', 1, metadata)
+        stored_text = text[:4096]
+        dedupe_key = self.packet_dedupe_key(target, sender, stored_text, metadata)
+        if not self.save(target, sender, stored_text, 'received', 1, metadata, dedupe_key):
+            return
         if not private:
             await channel_settings.notify(self, target, text)
         # Private-channel access is based on possession of its key, not display-name identity.
@@ -274,16 +288,33 @@ class Bridge:
         rows = self.db.execute('SELECT id,sender,text,status,metadata FROM messages WHERE target=? AND deleted=0 ORDER BY id DESC LIMIT 100', (target,)).fetchall()
         blocked = {r[0] for r in self.db.execute('SELECT sender FROM blocked WHERE target=?', (target,))}
         messages = []
+        seen_packets = set()
         for mid, sender, text, status, metadata in reversed(rows):
+            parsed_metadata = json.loads(metadata)
+            if status == 'received':
+                dedupe_key = self.packet_dedupe_key(target, sender, text, parsed_metadata)
+                if dedupe_key is not None:
+                    if dedupe_key in seen_packets:
+                        continue
+                    seen_packets.add(dedupe_key)
             label = self.display_sender(sender, text)
-            messages.append(dict(id=mid, sender=label, text=text, status=status, metadata=json.loads(metadata),
+            messages.append(dict(id=mid, sender=label, text=text, status=status, metadata=parsed_metadata,
                                  blocked=label in blocked, can_block=status == 'received' and label not in ('unknown','channel peer')))
+        unread_rows = self.db.execute('SELECT target,sender,text,status,metadata FROM messages WHERE unread=1 AND deleted=0').fetchall()
+        unread_packets = set()
+        unread_without_packet_id = 0
+        for unread_target, sender, text, status, metadata in unread_rows:
+            key = self.packet_dedupe_key(unread_target, sender, text, json.loads(metadata)) if status == 'received' else None
+            if key is None:
+                unread_without_packet_id += 1
+            else:
+                unread_packets.add(key)
         state = self.radio.state
         if self.radio.client and not self.radio.client.is_connected:
             state = 'reconnecting · waiting for node'
         return dict(ok=True, state=state, message_byte_limit=self.config['radio']['max_message_bytes'], channels=[dict(c, favourite=c['id'][3:] in {r[0] for r in self.db.execute('SELECT key FROM favourites')}) for c in self.radio.channels] + heard_contacts.entries(self.db, self.radio.channels, self.display_sender), channel_added=added, contact_result=contact_result, settings_result=settings_result, node_result=node_result, ai_result=ai_result,
                     messages=messages,
-                    unread=self.db.execute('SELECT COUNT(*) FROM messages WHERE unread=1 AND deleted=0').fetchone()[0],
+                    unread=len(unread_packets) + unread_without_packet_id,
                     ai='responding' if self.ai_busy else ('enabled · ' + ', '.join(self.config['llm'].get('private_channels', [])) if self.config['llm']['enabled'] else 'disabled'),
                     can_send=self.config['radio']['transport'] == 'demo' or (self.config['radio']['allow_transmit'] and state.startswith('connected')),
                     node=self.radio.node, map_nodes=map_nodes(self.radio))

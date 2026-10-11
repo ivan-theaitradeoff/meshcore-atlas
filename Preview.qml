@@ -3,6 +3,7 @@ import QtQuick.Controls
 import Quickshell
 import QtCore
 ShellRoot {
+    AtlasTheme { id: theme }
     FloatingWindow {
         id: window
         implicitWidth: 900; implicitHeight: 680
@@ -16,13 +17,13 @@ ShellRoot {
         }
         MeshClient { id: client }
         Rectangle {
-            anchors.fill: parent; color: "#171e26"
-            Label { anchors.centerIn: parent; text: "Mesh Atlas"; color: "#c7d3df"; font.pixelSize: 28 }
+            anchors.fill: parent; color: theme.background
+            Label { anchors.centerIn: parent; text: "Mesh Atlas"; color: theme.foreground; font.pixelSize: 28 }
         }
         Loader {
             id: chat; anchors.fill: parent
             function openChat() {
-                if (!item) setSource("MeshPanel.qml", {client:client, active:true, sidebarSection:client.target.indexOf("dm:") === 0 ? "contacts" : "channels"})
+                if (!item) setSource("MeshPanel.qml", {client:client, theme:theme, active:true, sidebarSection:client.target.indexOf("dm:") === 0 ? "contacts" : "channels"})
             }
         }
         Connections {
@@ -36,9 +37,9 @@ ShellRoot {
             height: Math.min(620, window.height - 32)
             modal: true; focus: true; padding: 0
             closePolicy: Popup.NoAutoClose
-            background: Rectangle { color: "#171e26"; border.color: "#586b80"; radius: 12 }
+            background: Rectangle { color: theme.surface; border.color: theme.border; radius: 12 }
             contentItem: ConnectionSetup {
-                id: setup; client: client
+                id: setup; client: client; theme: theme
                 onInitialized: function(configured) {
                     if (configured) savedState.setupCompleted = true
                     if (!configured && !savedState.setupCompleted) connectionDialog.open()

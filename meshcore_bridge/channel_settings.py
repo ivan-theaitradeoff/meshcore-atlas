@@ -2,6 +2,7 @@ import asyncio
 import base64
 import json
 import time
+import sys
 from urllib.parse import urlencode
 from .channels import ChannelError, validate_name
 
@@ -30,7 +31,12 @@ async def notify(bridge, target, text):
     # Never expose received content or node/channel names to argv or the
     # desktop notification service. Mention matching stays inside this process.
     try:
-        proc = await asyncio.create_subprocess_exec('notify-send', '--app-name=Meshcore Atlas', '--', 'Meshcore Atlas', 'New message received. Open the app to read it.', stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL)
+        # A separate desktop-session worker can focus the window without
+        # blocking incoming radio messages or inheriting bridge sandbox limits.
+        proc = await asyncio.create_subprocess_exec(
+            'systemd-run', '--user', '--collect', '--quiet', '--',
+            sys.executable, '-m', 'meshcore_bridge.notification',
+            stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL)
         await asyncio.wait_for(proc.wait(), 5)
     except (OSError, TimeoutError):
         pass

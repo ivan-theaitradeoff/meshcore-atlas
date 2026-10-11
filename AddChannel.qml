@@ -5,6 +5,7 @@ import QtQuick.Dialogs
 
 Popup {
     id: root
+    property var theme
     objectName: "addChannelPopup"
     required property var client
     property string mode: "public"
@@ -32,7 +33,7 @@ Popup {
     height: Math.min(460, parent.height - 24)
     padding: 20
     closePolicy: busy ? Popup.NoAutoClose : Popup.CloseOnEscape | Popup.CloseOnPressOutside
-    background: Rectangle { color: "#202a36"; border.color: "#647184"; radius: 8 }
+    background: Rectangle { color: root.theme.surface; border.color: root.theme.border; radius: 8 }
     onClosed: { secret.text = ""; qrSource.text = ""; shareKey = "" }
     Connections {
         target: root.client
@@ -59,7 +60,7 @@ Popup {
     ColumnLayout {
         anchors.fill: parent; spacing: 12
         RowLayout {
-            Label { text: root.finished ? "Channel ready" : root.heading; color: "#c7d3df"; font.pixelSize: 18; Layout.fillWidth: true; wrapMode: Text.Wrap }
+            Label { text: root.finished ? "Channel ready" : root.heading; color: root.theme.foreground; font.pixelSize: 18; Layout.fillWidth: true; wrapMode: Text.Wrap }
             Button { text: "×"; enabled: !root.busy; onClicked: root.close() }
         }
         ScrollView {
@@ -68,7 +69,7 @@ Popup {
             ColumnLayout {
                 width: parent.width; spacing: 12
                 Label {
-                    visible: !root.finished; Layout.fillWidth: true; wrapMode: Text.Wrap; color: "#a8bfd6"
+                    visible: !root.finished; Layout.fillWidth: true; wrapMode: Text.Wrap; color: root.theme.muted
                     text: root.mode === "private_create" ? "Create a channel with a new random secret key. Share the key with people you want to invite."
                         : root.mode === "private_join" ? "Enter the channel name and its 32-character hexadecimal secret key."
                         : root.mode === "hashtag" ? "Anyone can join using the same hashtag. Use a–z, 0–9 and hyphens."
@@ -80,9 +81,9 @@ Popup {
                 TextField { id: secret; visible: !root.finished && (root.mode === "private_join" || root.mode === "public_import"); Layout.fillWidth: true; placeholderText: "Secret key (32 hex characters)"; echoMode: TextInput.Password; maximumLength: 32; enabled: !root.busy }
                 Button { visible: !root.finished && root.mode === "qr"; text: "Choose QR image…"; Layout.fillWidth: true; enabled: !root.busy; onClicked: imagePicker.open() }
                 TextField { id: qrSource; visible: !root.finished && root.mode === "qr"; Layout.fillWidth: true; placeholderText: "QR image path or meshcore:// channel link"; echoMode: TextInput.Password; enabled: !root.busy }
-                Label { visible: root.errorText.length > 0; text: root.errorText; textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.Wrap; color: "#e3b98f" }
-                Label { visible: root.finished; text: root.savedName + " is ready in your channel list."; textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.Wrap; color: "#c7d3df" }
-                Label { visible: root.shareKey.length > 0; text: "Save this key to invite others. It will be hidden when you close this popup."; Layout.fillWidth: true; wrapMode: Text.Wrap; color: "#a8bfd6" }
+                Label { visible: root.errorText.length > 0; text: root.errorText; textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.Wrap; color: root.theme.warning }
+                Label { visible: root.finished; text: root.savedName + " is ready in your channel list."; textFormat: Text.PlainText; Layout.fillWidth: true; wrapMode: Text.Wrap; color: root.theme.foreground }
+                Label { visible: root.shareKey.length > 0; text: "Save this key to invite others. It will be hidden when you close this popup."; Layout.fillWidth: true; wrapMode: Text.Wrap; color: root.theme.muted }
                 TextField { visible: root.shareKey.length > 0; text: root.shareKey; readOnly: true; Layout.fillWidth: true; selectByMouse: true }
                 Button { visible: root.shareKey.length > 0; text: "Copy channel key"; Layout.fillWidth: true; onClicked: { copyBuffer.text = root.shareKey; copyBuffer.selectAll(); copyBuffer.copy(); copyBuffer.text = "" } }
             }

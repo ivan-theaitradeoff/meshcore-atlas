@@ -4,6 +4,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 Popup {
     id: root
+    property var theme
     required property var client
     property var identity: ({})
     property bool loaded: false
@@ -24,7 +25,7 @@ Popup {
     width: Math.min(510, parent.width-24); height: Math.min(680,parent.height-24)
     modal: true; focus: true; padding: 18
     closePolicy: client.nodePending ? Popup.NoAutoClose : Popup.CloseOnEscape | Popup.CloseOnPressOutside
-    background: Rectangle { color: "#202a36"; border.color: "#647184"; radius: 8 }
+    background: Rectangle { color: root.theme.surface; border.color: root.theme.border; radius: 8 }
     Connections {
         target: root.client
         function onNodeResult(result) {
@@ -36,13 +37,13 @@ Popup {
     }
     ColumnLayout {
         anchors.fill: parent; spacing: 10
-        Label { text: "Node Settings"; color: "#c7d3df"; font.pixelSize: 20 }
+        Label { text: "Node Settings"; color: root.theme.foreground; font.pixelSize: 20 }
         ScrollView {
             Layout.fillWidth: true; Layout.fillHeight: true; contentWidth: availableWidth
             ColumnLayout {
                 width: parent.width; spacing: 10
-                Label { text: "Public key"; color: "#a8bfd6" }
-                Label { text: root.identity.public_key || "—"; textFormat: Text.PlainText; wrapMode: Text.WrapAnywhere; color: "#c7d3df"; font.family: "monospace"; Layout.fillWidth: true }
+                Label { text: "Public key"; color: root.theme.muted }
+                Label { text: root.identity.public_key || "—"; textFormat: Text.PlainText; wrapMode: Text.WrapAnywhere; color: root.theme.foreground; font.family: "monospace"; Layout.fillWidth: true }
                 TextEdit { id: publicKeyCopy; visible: false }
                 Button { text: "Copy public key"; enabled: root.loaded; onClicked: { publicKeyCopy.text = root.identity.public_key || ""; publicKeyCopy.selectAll(); publicKeyCopy.copy(); publicKeyCopy.clear() } }
                 Button {
@@ -58,7 +59,7 @@ Popup {
                     readonly property var field: modelData
                     property alias value: input.text
                     Layout.fillWidth: true
-                    Label { text: parent.field.label; color: "#a8bfd6" }
+                    Label { text: parent.field.label; color: root.theme.muted }
                     TextField { id: input; Layout.fillWidth: true; enabled: root.loaded && !root.client.nodePending; selectByMouse: true }
                 }
                 Repeater {
@@ -67,10 +68,10 @@ Popup {
                     delegate: SettingField {}
                 }
                 CheckBox { id: share; text: "Share position in adverts"; enabled: root.loaded && !root.client.nodePending }
-                Label { text: "Radio settings must match the nodes you want to reach. Saving does not send an advert."; color: "#a8bfd6"; wrapMode: Text.Wrap; Layout.fillWidth: true }
+                Label { text: "Radio settings must match the nodes you want to reach. Saving does not send an advert."; color: root.theme.muted; wrapMode: Text.Wrap; Layout.fillWidth: true }
             }
         }
-        Label { text: root.feedback; visible: text.length>0; color: "#e3b98f"; wrapMode: Text.Wrap; Layout.fillWidth: true }
+        Label { text: root.feedback; visible: text.length>0; color: root.theme.warning; wrapMode: Text.Wrap; Layout.fillWidth: true }
         RowLayout {
             Button { text: "Close"; enabled: !root.client.nodePending; onClicked: root.close() }
             Button { text: root.client.nodePending ? "Working…" : "Save"; enabled: root.loaded && root.client.online && !root.client.nodePending; onClicked: root.save() }

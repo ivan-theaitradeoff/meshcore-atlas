@@ -4,9 +4,9 @@
 
 Connect a MeshCore companion node over Bluetooth or USB, manage conversations, and optionally make a local language model available to your own private mesh channel.
 
-[Download 0.2.2](https://github.com/ivan-theaitradeoff/meshcore-atlas/releases/tag/v0.2.2) · [Report an issue](https://github.com/ivan-theaitradeoff/meshcore-atlas/issues) · [Privacy and permissions](docs/PRIVACY.md)
+[Download 0.3.0](https://github.com/ivan-theaitradeoff/meshcore-atlas/releases/tag/v0.3.0) · [Report an issue](https://github.com/ivan-theaitradeoff/meshcore-atlas/issues) · [Privacy and permissions](docs/PRIVACY.md)
 
-> **Early release.** Bluetooth messaging and local AI have been exercised with hardware. USB is implemented but has not been hardware-tested. The Omarchy marketplace submission is awaiting maintainer review; this is not an official MeshCore client or a security-certified product.
+> **Early release.** Bluetooth messaging and local AI have been exercised with hardware. USB is implemented but has not been hardware-tested. This is an independent project, not an official MeshCore client or a security-certified product.
 
 ![Meshcore Atlas messaging interface](preview.png)
 
@@ -16,6 +16,7 @@ Connect a MeshCore companion node over Bluetooth or USB, manage conversations, a
 
 - **Message over the mesh:** public, private, and hashtag channels; direct messages to saved contacts; local history and message actions.
 - **Manage your node:** guided connection setup, automatic reconnect, node details, and radio settings.
+- **Arrange your workspace:** toggle messages and the map independently, use them side by side, and resize the divider. Colors follow your Omarchy theme.
 - **Find nodes on a map:** online OpenStreetMap tiles, search, repeater filtering, and clustered markers.
 - **Use local AI remotely:** allow selected private channels to send questions to a model running on your computer.
 - **Control your model:** LM Studio model selection and context settings from the app or mesh messages.
@@ -81,9 +82,9 @@ After successful model selection, send ordinary messages to chat. Long replies a
 
 ## Privacy and limitations
 
-Desktop notifications show only a generic new-message alert. Message text and sender/channel names stay out of notification content and process arguments.
+Desktop notifications show only a generic new-message alert. Use the notification’s Open app action to open or focus the window. Message text and sender/channel names stay out of notification content and process arguments.
 
-- The release includes no personal conversations, node settings, private keys, screenshots, or models. Runtime data stays separate from the plugin code.
+- The source-only release ZIP excludes personal conversations, node settings, private keys, screenshots, and models. The repository retains the explicitly approved preview shown above. Runtime data stays separate from the plugin code.
 - Local history and AI memory are stored in plaintext with restricted file creation permissions. Private channel messages are available to other holders of the channel key.
 - Opening the online map contacts OpenStreetMap. The tile service sees your IP address and requested map area. Offline maps are not implemented.
 - “Heard repeats” counts received copies, not confirmed delivery or unique repeaters.

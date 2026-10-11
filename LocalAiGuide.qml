@@ -4,17 +4,18 @@ import QtQuick.Layouts
 
 Popup {
     id: root
+    property var theme
     signal createChannel()
     signal openSettings()
     anchors.centerIn: parent
     width: Math.min(620, parent.width - 24)
     height: Math.min(700, parent.height - 24)
     modal: true; focus: true; padding: 20
-    background: Rectangle { color: "#202a36"; border.color: "#647184"; radius: 10 }
+    background: Rectangle { color: root.theme.surface; border.color: root.theme.border; radius: 10 }
     ColumnLayout {
         anchors.fill: parent; spacing: 14
         RowLayout {
-            Label { text: "Connect Local AI"; font.pixelSize: 22; color: "#c7d3df"; Layout.fillWidth: true }
+            Label { text: "Connect Local AI"; font.pixelSize: 22; color: root.theme.foreground; Layout.fillWidth: true }
             Button { text: "×"; Accessible.name: "Close Local AI guide"; onClicked: root.close() }
         }
         ScrollView {
@@ -35,8 +36,8 @@ Popup {
                     ColumnLayout {
                         required property var modelData
                         Layout.fillWidth: true; spacing: 6
-                        Label { text: parent.modelData.heading; color: "#c7d3df"; font.bold: true; Layout.fillWidth: true; wrapMode: Text.WordWrap }
-                        Label { text: parent.modelData.body; color: "#c7d3df"; Layout.fillWidth: true; wrapMode: Text.WordWrap }
+                        Label { text: parent.modelData.heading; color: root.theme.foreground; font.bold: true; Layout.fillWidth: true; wrapMode: Text.WordWrap }
+                        Label { text: parent.modelData.body; color: root.theme.foreground; Layout.fillWidth: true; wrapMode: Text.WordWrap }
                     }
                 }
             }

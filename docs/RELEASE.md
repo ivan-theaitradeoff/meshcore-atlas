@@ -1,10 +1,18 @@
-# Meshcore Atlas 0.2.1
+# Meshcore Atlas 0.3.0
 
-Category: Network
-Tags: meshcore, messaging, radio, bluetooth, local-ai, maps
+- Open messages and the map side by side. Toggle each view independently and resize the divider; drafts and the map view remain available when hidden.
+- Follow the active Omarchy theme, including buttons, fields, and dialogs.
+- Open or focus the app from generic desktop notifications without exposing message text or names.
+- Suppress repeat deliveries of the same timestamped radio message in history, unread counts, notifications, and AI processing.
+- Allow more time for large node directories to load and preserve the previous directory when a refresh fails.
+- Improve map visibility with red, white-bordered markers, reliable two-axis dragging, and stable markers while panning.
 
-Guided node setup, channels, contacts, online maps, and optional private-channel local AI with bounded conversation memory. Bluetooth fresh setup was user-tested on the development machine; an ARM64 test installation was also prepared. USB has not been hardware-tested. Offline maps are not included.
+## Updating
 
-Publish only the audited release folder, never the development checkout or its history. GitHub publication and marketplace approval are separate steps. Submit the public repository through https://plugins.omarchy.org/publish.html.
+Update the plugin through Omarchy, then open **Connection setup → Update / repair components** to update the companion bridge. Reconnect and close/reopen the app. Existing settings and history are retained. Models are not changed.
 
-The 0.2.1 release ZIP contains no screenshots. The repository now includes a separately approved preview with visible node names and conversations; image metadata is absent.
+## Packaging and privacy
+
+The attached source-only ZIP is built from an explicit file list. It excludes runtime settings, databases, logs, screenshots, pairing credentials, channel keys, local model files, and development history. The GitHub repository retains the previously approved preview image unchanged; it is excluded from the ZIP.
+
+USB remains implemented but not hardware-tested. Online maps need internet access. Radio delivery is not guaranteed.

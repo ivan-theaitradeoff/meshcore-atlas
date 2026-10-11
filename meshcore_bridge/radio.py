@@ -87,9 +87,12 @@ class Radio:
                 channels.append({"id": f"ch:{index}", "name": name})
                 if len(key) == 16 and key not in (PUBLIC_KEY, bytes(16), hashlib.sha256(name.encode()).digest()[:16]) and not name.startswith('#'):
                     private_channels.add(f"ch:{index}")
-        result = await self.client.commands.get_contacts()
+        result = await self.client.commands.get_contacts(timeout=30)
         if result.type != EventType.ERROR:
             self.contacts = result.payload
+            self.node.pop("contact_sync_error", None)
+        else:
+            self.node["contact_sync_error"] = "Contact sync timed out or failed; retrying automatically."
         channels.extend({"id": f"dm:{key}", "name": "DM · " + value.get("adv_name", key[:12])}
                         for key, value in self.contacts.items())
         self.private_channels = private_channels

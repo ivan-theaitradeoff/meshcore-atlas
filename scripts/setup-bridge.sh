@@ -17,5 +17,6 @@ chmod 600 "$HOME/.config/meshcore-bridge/config.toml"
 unit="$HOME/.config/systemd/user/meshcore-bridge.service"
 if [[ -e "$unit" ]]; then cp "$unit" "$unit.bak.$(date +%s)"; fi
 cp "$root/systemd/meshcore-bridge.service" "$unit"
+printf '%s\n' "$root" > "$HOME/.local/share/meshcore-bridge/app-path"
 systemctl --user daemon-reload
 printf '%s\n' 'Bridge installed, but not started. Configure ~/.config/meshcore-bridge/config.toml, then run:' 'systemctl --user enable --now meshcore-bridge'

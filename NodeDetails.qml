@@ -4,6 +4,7 @@ import QtQuick.Controls
 
 ListView {
     id: root
+    property var theme
     required property var node
     property bool connected: false
     clip: true
@@ -49,9 +50,9 @@ ListView {
         required property var modelData
         width: ListView.view.width
         height: Math.max(38, detail.implicitHeight + 16)
-        color: "#2e3540"
-        Text { x: 10; y: 8; width: 180; text: row.modelData[0]; color: "#899db1"; font.family: "monospace"; font.pixelSize: 12; wrapMode: Text.Wrap; textFormat: Text.PlainText }
-        Text { id: detail; x: 200; y: 8; width: Math.max(20, parent.width - 212); text: row.modelData[1]; color: "#c7d3df"; font.family: "monospace"; font.pixelSize: 12; wrapMode: Text.WrapAnywhere; textFormat: Text.PlainText }
+        color: root.theme.sidebar
+        Text { x: 10; y: 8; width: 180; text: row.modelData[0]; color: root.theme.muted; font.family: "monospace"; font.pixelSize: 12; wrapMode: Text.Wrap; textFormat: Text.PlainText }
+        Text { id: detail; x: 200; y: 8; width: Math.max(20, parent.width - 212); text: row.modelData[1]; color: root.theme.foreground; font.family: "monospace"; font.pixelSize: 12; wrapMode: Text.WrapAnywhere; textFormat: Text.PlainText }
     }
     ScrollBar.vertical: ScrollBar {}
 }

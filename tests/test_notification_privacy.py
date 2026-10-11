@@ -1,4 +1,5 @@
 import sqlite3
+import sys
 import unittest
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
@@ -21,8 +22,8 @@ class NotificationPrivacy(unittest.IsolatedAsyncioTestCase):
         with patch('asyncio.create_subprocess_exec', AsyncMock(return_value=proc)) as launch:
             await notify(self.bridge, 'ch:1', 'SYNTHETIC_SENDER: SYNTHETIC_CONFIDENTIAL_BODY')
         self.assertEqual(launch.call_args.args, (
-            'notify-send', '--app-name=Meshcore Atlas', '--', 'Meshcore Atlas',
-            'New message received. Open the app to read it.'))
+            'systemd-run', '--user', '--collect', '--quiet', '--',
+            sys.executable, '-m', 'meshcore_bridge.notification'))
 
     async def test_mentions_filter_does_not_disclose_content(self):
         self.db.execute("INSERT INTO channel_settings VALUES ('ch:1','mentions',0)")
