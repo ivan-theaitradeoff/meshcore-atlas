@@ -191,7 +191,28 @@ Rectangle {
                     ScrollView {
                         visible: root.selectedGroup.length > 0
                         Layout.fillWidth: true; Layout.preferredHeight: Math.min(220, root.selectedGroup.length*40)
-                        Column { Repeater { model: root.selectedGroup; delegate: Button { required property var modelData; text: modelData.name; onClicked: { root.selected=modelData; root.selectedGroup=[] } } } }
+                        Column {
+                            Repeater {
+                                model: root.selectedGroup
+                                delegate: Button {
+                                    id: groupButton
+                                    required property var modelData
+                                    objectName: "groupNode:" + modelData.id
+                                    text: modelData.name
+                                    // Radio-advertised names are untrusted, including HTML and image URLs.
+                                    contentItem: Text {
+                                        text: groupButton.text
+                                        textFormat: Text.PlainText
+                                        font: groupButton.font
+                                        color: groupButton.palette.buttonText
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                        elide: Text.ElideRight
+                                    }
+                                    onClicked: { root.selected=modelData; root.selectedGroup=[] }
+                                }
+                            }
+                        }
                     }
                     Button { text: "Close"; onClicked: { root.selected=null; root.selectedGroup=[] } }
                 }

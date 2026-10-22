@@ -21,6 +21,31 @@ TestCase {
         }
         tileUrl: "http://127.0.0.1:9/"
     }
+    function test_group_names_are_plain_text_data() {
+        return [
+            {tag: "image", name: '<img src="http://127.0.0.1:9/name.png">'},
+            {tag: "link", name: '<a href="https://example.invalid/">Node</a>'},
+            {tag: "url", name: 'https://example.invalid/node.png'},
+            {tag: "literal", name: 'A & B <relay> ♜'}
+        ]
+    }
+    function test_group_names_are_plain_text(data) {
+        const node = {id: "untrusted", name: data.name, latitude: 47,
+                      longitude: -122, type: 2, last_advert: 0}
+        panel.selected = null
+        panel.selectedGroup = [node, {id: "other", name: "Other"}]
+        const button = findChild(panel, "groupNode:untrusted")
+        verify(button !== null)
+        compare(button.text, data.name)
+        compare(button.contentItem.text, data.name)
+        compare(button.contentItem.textFormat, Text.PlainText)
+        // Selection must still use the contact object, never the displayed name as a URL.
+        button.clicked()
+        compare(panel.selected.id, node.id)
+        compare(panel.selected.name, data.name)
+        compare(panel.selectedGroup.length, 0)
+        panel.selected = null
+    }
     function drag(map, dx, dy) {
         mousePress(map, 300, 200, Qt.LeftButton)
         for (let i = 1; i <= 10; ++i) mouseMove(map, 300 + dx*i/10, 200 + dy*i/10, 20)
